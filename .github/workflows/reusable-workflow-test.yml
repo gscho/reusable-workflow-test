@@ -44,7 +44,7 @@ jobs:
       with:
         role-to-assume: arn:aws:iam::700273628989:role/test-repo-deploy-role
         role-session-name: testreposession
-        aws-region: ${{ env.AWS_REGION }}
+        aws-region: us-east-1
     - name: upload a file to s3 
       if: steps.check.outputs.triggered == 'true'
       run: |
