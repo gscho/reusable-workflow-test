@@ -1,4 +1,4 @@
-name: "Reuable Deployment Workflow"
+name: "Reusable Deployment Workflow"
 on:
   workflow_call:
 jobs:
