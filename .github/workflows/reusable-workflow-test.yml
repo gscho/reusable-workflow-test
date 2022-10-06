@@ -3,6 +3,13 @@ on:
 jobs:
   reusable_workflow_job:
     runs-on: ubuntu-latest
+    if: ${{ github.event.issue.pull_request }}
     steps:
     - uses: actions/checkout@v3
-    - run: ls -la
+    - name: PR comment with reactions
+      uses: thollander/actions-comment-pull-request@v1
+      with:
+        message: |
+          Hello world ! :wave:
+        reactions: eyes, rocket
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
