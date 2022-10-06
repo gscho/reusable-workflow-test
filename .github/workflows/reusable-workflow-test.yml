@@ -31,5 +31,21 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         ref: ${{ steps.pr_data.outputs.branch }}
-    - run: ls -la
+        path: src
+    - name: clone infra as code
       if: steps.check.outputs.triggered == 'true'
+      with:
+        repo: gscho/resuable-workflow-test
+        path: iaac
+    - name: Configure AWS Credentials
+      if: steps.check.outputs.triggered == 'true'
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: arn:aws:iam::700273628989:role/test-repo-deploy-role
+        role-session-name: testreposession
+        aws-region: ${{ env.AWS_REGION }}
+    - name: upload a file to s3 
+      if: steps.check.outputs.triggered == 'true'
+      run: |
+        echo "Hello world" > "index.html"
+        aws s3 cp ./index.html s3://gscho-test-bucket/
