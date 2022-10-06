@@ -48,4 +48,4 @@ jobs:
       if: steps.check.outputs.triggered == 'true'
       run: |
         echo "Hello world" > "index.html"
-        aws s3 cp ./index.html s3://gscho-test-bucket/
+        aws s3 cp ./index.html s3://gscho-test-bucket2/
