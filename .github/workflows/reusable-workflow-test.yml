@@ -37,7 +37,7 @@ jobs:
       if: steps.deploy.outputs.triggered == 'true'
       uses: actions/checkout@v3
       with:
-        repo: gscho/resuable-workflow-test
+        repository: gscho/resuable-workflow-test
         path: iaac
     - name: "Configure AWS credentials"
       if: steps.deploy.outputs.triggered == 'true'
