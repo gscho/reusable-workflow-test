@@ -34,6 +34,7 @@ jobs:
         path: src
     - name: clone infra as code
       if: steps.check.outputs.triggered == 'true'
+      uses: actions/checkout@v3
       with:
         repo: gscho/resuable-workflow-test
         path: iaac
