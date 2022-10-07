@@ -101,7 +101,7 @@ function create-or-update-service() {
         --desired-count 1
   fi
 
-  sleep 30
+  sleep 60
 
   SERVICE_TASK_ARN=$(aws ecs list-tasks \
                          --cluster "${CLUSTER_NAME}" \
