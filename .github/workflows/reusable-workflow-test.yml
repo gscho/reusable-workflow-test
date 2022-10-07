@@ -70,7 +70,7 @@ jobs:
         URL=$(cat url.txt)
         echo "::set-output name=url::$URL"
       env:
-        GITHUB_REF_NAME: ${{ steps.pr_data.outputs.branch }}
+        BRANCH_NAME: ${{ steps.pr_data.outputs.branch }}
         DOCKER_IMAGE: gscho/homework-app:${{ steps.pr_data.outputs.sha }}
     - name: Comment PR
       if: steps.deploy.outputs.triggered == 'true'
