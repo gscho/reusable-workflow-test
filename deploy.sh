@@ -4,11 +4,12 @@ set -e
 
 export AWS_PAGER=""
 
-DOCKER_IMAGE="public.ecr.aws/docker/library/httpd:latest"
-CLUSTER_NAME="${GITHUB_REF_NAME}-cluster"
-SERVICE_NAME="${GITHUB_REF_NAME}-web-service"
+REPO_NAME=$(basename "${GITHUB_REPOSITORY}")
+DEPLOY_ID="${GITHUB_REF_NAME}-${REPO_NAME}"
+CLUSTER_NAME="${DEPLOY_ID}-cluster"
+SERVICE_NAME="${DEPLOY_ID}-web-service"
 ECS_SUBNET_ID="subnet-0964d46f30718aa4d"
-ECS_SG_NAME="${GITHUB_REF_NAME}-ecs-sg"
+ECS_SG_NAME="${DEPLOY_ID}-ecs-sg"
 
 function emit() {
   local __MESSAGE="${1}"
@@ -51,8 +52,8 @@ function set-security-group-rules() {
 
 function create-cluster() {
     DESC_CLUSTERS=$(aws ecs describe-clusters \
-                        --clusters "${CLUSTER_NAME}" | jq -r '.clusters[0].clusterArn')
-    if [ "${DESC_CLUSTERS}" == "null" ]; then
+                        --clusters "${CLUSTER_NAME}" | jq -r '.clusters[] | select(.status=="ACTIVE")')
+    if [ -z "${DESC_CLUSTERS}" ]; then
       emit "create cluster: ${CLUSTER_NAME}"
       aws ecs create-cluster \
         --cluster-name "${CLUSTER_NAME}"
@@ -78,8 +79,8 @@ function register-task-def() {
 function create-or-update-service() {
   DESC_SERVICES=$(aws ecs describe-services \
                       --cluster "${CLUSTER_NAME}" \
-                      --services "${SERVICE_NAME}" | jq -r '.services[0].serviceArn')
-  if [ "${DESC_SERVICES}" == "null" ]; then
+                      --services "${SERVICE_NAME}" | jq -r '.services[] | select(.status=="ACTIVE")')
+  if [ -z "${DESC_SERVICES}" ]; then
     emit "creating service: ${SERVICE_NAME}"
     aws ecs create-service \
         --cluster "${CLUSTER_NAME}" \
@@ -97,6 +98,9 @@ function create-or-update-service() {
         --task-definition "${LATEST_TASK_DEF}" \
         --desired-count 1
   fi
+
+  sleep 30
+
   SERVICE_TASK_ARN=$(aws ecs list-tasks \
                          --cluster "${CLUSTER_NAME}" \
                          --service "${SERVICE_NAME}" | jq -r '.taskArns[-1]')
@@ -115,11 +119,11 @@ function write-public-ip-to-file() {
 }
 
 function main() {
-    create-security-group
-    create-cluster
-    register-task-def
-    create-or-update-service
-    write-public-ip-to-file
+  create-security-group
+  create-cluster
+  register-task-def
+  create-or-update-service
+  write-public-ip-to-file
 }
 
 main "$@"
