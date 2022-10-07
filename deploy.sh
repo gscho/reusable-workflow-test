@@ -10,6 +10,7 @@ CLUSTER_NAME="${DEPLOY_ID}-cluster"
 SERVICE_NAME="${DEPLOY_ID}-web-service"
 ECS_SUBNET_ID="subnet-0964d46f30718aa4d"
 ECS_SG_NAME="${DEPLOY_ID}-ecs-sg"
+DEFAULT_TAGS="key=DEPLOY_ID,value=${DEPLOY_ID}"
 
 function emit() {
   local __MESSAGE="${1}"
@@ -56,7 +57,8 @@ function create-cluster() {
     if [ -z "${DESC_CLUSTERS}" ]; then
       emit "create cluster: ${CLUSTER_NAME}"
       aws ecs create-cluster \
-        --cluster-name "${CLUSTER_NAME}"
+        --cluster-name "${CLUSTER_NAME}" \
+        --tags ${DEFAULT_TAGS}
     else
       emit "cluster exists: ${ECS_SG_NAME}"
       emit "skipping create cluster"
