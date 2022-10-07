@@ -38,7 +38,7 @@ function set-security-group-rules() {
 function create-cluster() {
     DESC_CLUSTERS=$(aws ecs describe-clusters \
                         --clusters "${CLUSTER_NAME}" | jq -r '.clusters[0].clusterArn')
-    if [ ${DESC_CLUSTERS} == "null" ]; then
+    if [ "${DESC_CLUSTERS}" == "null" ]; then
       aws ecs create-cluster \
         --cluster-name "${CLUSTER_NAME}"
     fi
@@ -58,8 +58,8 @@ function register-task-def() {
 function create-or-update-service() {
   DESC_SERVICES=$(aws ecs describe-services \
                       --cluster-name "${CLUSTER_NAME}" \
-                      --services ${SERVICE_NAME} | jq -r '.services[0].serviceArn')
-  if [ ${DESC_CLUSTERS} == "null" ]; then
+                      --services "${SERVICE_NAME}" | jq -r '.services[0].serviceArn')
+  if [ "${DESC_SERVICES}" == "null" ]; then
     aws ecs create-service \
         --cluster "${CLUSTER_NAME}" \
         --service-name "${SERVICE_NAME}" \
@@ -76,7 +76,7 @@ function create-or-update-service() {
   fi
   SERVICE_TASK_ARN=$(aws ecs list-tasks \
                          --cluster "${CLUSTER_NAME}" \
-                         --service ${SERVICE_NAME} | jq -r '.taskArns[-1]')
+                         --service "${SERVICE_NAME}" | jq -r '.taskArns[-1]')
 }
 
 function write-public-ip-to-file() {
@@ -87,6 +87,7 @@ function write-public-ip-to-file() {
   PUBLIC_IP=$(aws ec2 describe-network-interfaces \
                   --network-interface-id "${ENI_ID}" | jq -r '.NetworkInterfaces[0].Association.PublicIp')
   echo "http://${PUBLIC_IP}" > url.txt
+  cat url.txt
 }
 
 function main() {
