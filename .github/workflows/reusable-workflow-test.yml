@@ -1,6 +1,11 @@
 name: "Reusable Deployment Workflow"
 on:
   workflow_call:
+secrets:
+  DOCKERHUB_USERNAME:
+    required: true
+  DOCKERHUB_TOKEN:
+    required: true
 jobs:
   reusable_workflow_job:
     if: ${{ github.event.issue.pull_request }}
@@ -22,11 +27,12 @@ jobs:
         route: ${{ github.event.issue.pull_request.url }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: "Get PR branch name"
+    - name: "Get PR branch info"
       if: steps.deploy.outputs.triggered == 'true'
       id: pr_data
       run: |
         echo "::set-output name=branch::${{ fromJson(steps.request.outputs.data).head.ref }}"
+        echo "::set-output name=sha::${{ fromJson(steps.request.outputs.data).head.sha }}"
     - name: "Clone the PR branch"
       if: steps.deploy.outputs.triggered == 'true'
       uses: actions/checkout@v3
@@ -52,7 +58,7 @@ jobs:
       with:
         context: ./src
         push: true
-        tags: gscho/homework-app:${{ github.sha }}
+        tags: gscho/homework-app:${{ steps.pr_data.outputs.sha }}
     - name: "Configure AWS credentials"
       if: steps.deploy.outputs.triggered == 'true'
       uses: aws-actions/configure-aws-credentials@v1
@@ -68,6 +74,8 @@ jobs:
         ./deploy.sh
         URL=$(cat url.txt)
         echo "::set-output name=url::$URL"
+      env:
+        DOCKER_IMAGE: gscho/homework-app:${{ steps.pr_data.outputs.sha }}
     - name: Comment PR
       uses: thollander/actions-comment-pull-request@v1
       with:
